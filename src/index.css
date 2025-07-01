@@ -3,15 +3,18 @@
 @tailwind components;
 @tailwind utilities;
 
-* {
-  
-}
+* {}
 
 .Container {
   width: 1430px;
   max-width: 100%;
   margin: 0 auto;
   padding: 0 15px;
+}
+
+
+.custom-z-index {
+  z-index: 9999 !important;
 }
 
 
