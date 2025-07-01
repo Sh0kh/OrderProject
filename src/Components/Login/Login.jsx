@@ -60,7 +60,7 @@ export default function Login() {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder="Admin"
+              // placeholder="Admin"
               className="text-black"
               crossOrigin={undefined}
             />
@@ -75,7 +75,7 @@ export default function Login() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Admin123"
+                // placeholder="Admin123"
                 className="text-black"
                 crossOrigin={undefined}
               />
