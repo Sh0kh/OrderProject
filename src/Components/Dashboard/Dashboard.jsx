@@ -81,9 +81,9 @@ export default function OrderList() {
       </h1>
 
       {/* Filters */}
-      <Card className="mb-6 py-[20px] px-[20px]">
-        <div className="flex flex-wrap gap-2 items-center justify-center ">
-          <div className="max-w-52">
+      <Card className="mb-6 py-[20px] px-[20px] shadow-md border">
+        <div className="flex flex-wrap gap-4 items-center justify-center">
+          <div className="max-w-52 w-full">
             <Select
               label="Faol holati"
               value={String(isActive)}
@@ -93,7 +93,7 @@ export default function OrderList() {
               <Option value="false">Nofaol</Option>
             </Select>
           </div>
-          <div className="max-w-52">
+          <div className="max-w-52 w-full">
             <Select
               label="Yopilgan"
               value={String(isClosed)}
@@ -103,7 +103,7 @@ export default function OrderList() {
               <Option value="false">Ochiq</Option>
             </Select>
           </div>
-          <div className="max-w-52">
+          <div className="max-w-52 w-full">
             <Select
               label="Hajm"
               value={String(size)}
@@ -126,62 +126,78 @@ export default function OrderList() {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6">
             {data.map((order, index) => (
               <Card
                 key={index}
                 className="shadow-md border border-gray-300 bg-white"
               >
-                <CardBody className="space-y-2 relative">
-                  <Typography variant="h6" className="font-bold text-black">
-                    {order.category} - {order.orderServiceType}
-                  </Typography>
+                <CardBody className="space-y-3 relative">
+                  <div className="flex justify-between items-center">
+                    <Typography variant="h6" className="font-bold text-black">
+                      {order.category} - {order.orderServiceType}
+                    </Typography>
+                    <OrderEdit refresh={getAllOrders} orderData={order} />
+                  </div>
+
                   <Typography className="text-gray-700">
                     <span className="font-medium">Izoh:</span>{" "}
-                    {order.orderComment}
+                    {order.orderComment || "Yo‘q"}
                   </Typography>
+
+                  <Typography className="text-gray-700">
+                    <span className="font-medium">Ish beruvchining telefon raqami:</span>{" "}
+                    {order.ownerPhone}
+                  </Typography>
+
                   <Typography className="text-gray-700">
                     <span className="font-medium">Buyurtma sanasi:</span>{" "}
                     {formatDateFromArray(order.orderDate)}
                   </Typography>
+
                   <Typography className="text-gray-700">
                     <span className="font-medium">Hudud:</span> Viloyat ID{" "}
                     {order.regionId}, Shahar ID {order.cityId}
                   </Typography>
+
                   <Typography className="text-gray-700">
                     <span className="font-medium">Egasining ID raqami:</span>{" "}
                     {order.ownerId}
                   </Typography>
+
                   <Typography className="text-gray-700">
                     <span className="font-medium">Manzil:</span>{" "}
                     {order.ownerFullAddress}
                   </Typography>
+
                   <Typography
                     className={`font-semibold ${order.orderStatus
                       ? "text-green-600"
                       : "text-red-500"
                       }`}
                   >
-                    {order.orderStatus
-                      ? "Tasdiqlangan"
-                      : "Tasdiqlanmagan"}
+                    {order.orderStatus ? "Tasdiqlangan" : "Tasdiqlanmagan"}
                   </Typography>
+
                   <Typography className="text-xs text-gray-400">
                     Yaratilgan vaqti:{" "}
                     {order.createAt
                       ? new Date(order.createAt).toLocaleString()
                       : "Yaratilgan sana yo'q"}
                   </Typography>
-                  <div className="flex items-center justify-end">
-                    <OrderEdit refresh={getAllOrders} orderData={order} />
-                  </div>
+                  <Typography className="text-xs text-gray-400">
+                    O`zgartirilgan vaqti:{" "}
+                    {order.updateAt
+                      ? new Date(order.updateAt).toLocaleString()
+                      : "O‘zgartirilgan sana yo'q"}
+                  </Typography>
                 </CardBody>
               </Card>
             ))}
           </div>
 
           {/* Pagination */}
-          <div className="flex justify-center gap-4 mt-8">
+          <div className="flex justify-center items-center gap-6 mt-8">
             <Button
               variant="outlined"
               onClick={() => setPage((prev) => Math.max(0, prev - 1))}
@@ -189,7 +205,7 @@ export default function OrderList() {
             >
               Orqaga
             </Button>
-            <Typography variant="h6" className="flex items-center">
+            <Typography variant="h6">
               Sahifa: {page + 1} / {totalPages}
             </Typography>
             <Button

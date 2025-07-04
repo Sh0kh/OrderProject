@@ -191,11 +191,11 @@ export default function OrderEdit({ orderData, refresh }) {
                     />
 
                     <Input
-                        label="Egasining ID raqami"
-                        name="ownerId"
-                        type="number"
-                        value={formData.ownerId || ""}
-                        disabled
+                        label="Ish beruvchining telefon raqami"
+                        name="ownerPhone"
+                        type="text"
+                        onChange={handleChange}
+                        value={formData.ownerPhone || ""}
                     />
 
                     <Textarea
