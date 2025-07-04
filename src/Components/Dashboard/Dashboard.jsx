@@ -181,16 +181,38 @@ export default function OrderList() {
 
                   <Typography className="text-xs text-gray-400">
                     Yaratilgan vaqti:{" "}
-                    {order.createAt
-                      ? new Date(order.createAt).toLocaleString()
-                      : "Yaratilgan sana yo'q"}
+                    {order.createAt ? (
+                      new Date(
+                        order.createAt[0],                // year
+                        order.createAt[1] - 1,            // month (0-based)
+                        order.createAt[2],                // day
+                        order.createAt[3],                // hour
+                        order.createAt[4],                // minute
+                        order.createAt[5],                // second,
+                        Math.floor(order.createAt[6] / 1000000) // convert nanoseconds to milliseconds
+                      ).toLocaleString()
+                    ) : (
+                      "Yaratilgan sana yo'q"
+                    )}
                   </Typography>
+
                   <Typography className="text-xs text-gray-400">
                     O`zgartirilgan vaqti:{" "}
-                    {order.updateAt
-                      ? new Date(order.updateAt).toLocaleString()
-                      : "O‘zgartirilgan sana yo'q"}
+                    {order.updateAt ? (
+                      new Date(
+                        order.updateAt[0],                // year
+                        order.updateAt[1] - 1,            // month (0-based)
+                        order.updateAt[2],                // day
+                        order.updateAt[3],                // hour
+                        order.updateAt[4],                // minute
+                        order.updateAt[5],                // second,
+                        Math.floor(order.updateAt[6] / 1000000) // convert nanoseconds to milliseconds
+                      ).toLocaleString()
+                    ) : (
+                      "Yaratilgan sana yo'q"
+                    )}
                   </Typography>
+
                 </CardBody>
               </Card>
             ))}
