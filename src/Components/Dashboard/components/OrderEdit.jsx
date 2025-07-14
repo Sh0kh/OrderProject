@@ -77,7 +77,7 @@ export default function OrderEdit({ orderData, refresh }) {
     const handleSubmit = async () => {
         setLoading(true);
         try {
-            const response = await axios.put('/bot/orders/update', formData)
+            const response = await axios.put('/api/bot/orders/update', formData)
             Swal.fire({
                 title: "Muvaffaqiyatli!",
                 icon: "success",

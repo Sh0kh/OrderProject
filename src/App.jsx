@@ -5,6 +5,7 @@ import MainLayout from "./layouts/MainLayout";
 import AdminLayout from "./layouts/AdminLayout";
 import Login from "./Components/Login/Login";
 import Dashboard from "./Components/Dashboard/Dashboard";
+import User from "./Components/User/User";
 
 
 function App() {
@@ -21,6 +22,7 @@ function App() {
             }
           >
             <Route index element={<Dashboard />} />
+            <Route path="/user" element={<User />} />
           </Route>
           <Route element={<MainLayout />}>
 
