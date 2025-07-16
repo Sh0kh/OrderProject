@@ -34,7 +34,7 @@ export default function OrderList() {
   const getAllOrders = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(`/api/bot/orders/getAll`, {
+      const response = await axios.get(`/order/api/getAll`, {
         headers: {
           "ngrok-skip-browser-warning": "true",
         },

@@ -8,6 +8,7 @@ import {
     Select,
     Option,
     Textarea,
+    Chip,
 } from "@material-tailwind/react";
 import axios from "axios";
 import { useState, useEffect } from "react";
@@ -15,53 +16,84 @@ import Swal from "sweetalert2";
 import regions from "../../Dashboard/Data/regions.json";
 import districts from "../../Dashboard/Data/districts.json";
 
-export default function EditUser({ user, refresh }) {
+export default function EditUser({ user, refresh, userType }) {
     const [open, setOpen] = useState(false);
+    const [selectedDistricts, setSelectedDistricts] = useState([]);
 
     const [formData, setFormData] = useState({
         id: user.id,
-        username: user.username || "",
-        user_phone_number: user.user_phone_number || "",
-        fullAddress: user.fullAddress || "",
-        regionId: user.regionId || "",
-        cityId: user.cityId || "",
+        username: user.fullName || user.username || "",
+        user_phone_number: user.phoneNumber || user.user_phone_number || "",
+        ...(userType === 'customer' ? {
+            regionAndCityAddress: user.regionAndCityAddress || "",
+            homeAddress: user.homeAddress || "",
+            addressComment: user.addressComment || "",
+        } : {}),
+        ...(userType === 'worker' ? {
+            regionId: user.regionId || "",
+            citiesId: user.citiesId || [],
+            workerCount: user.workerCount || 1,
+            services_category: user.services_category || "",
+            balance: user.balance || 0,
+        } : {}),
         language: user.language || "uz",
-        user_type: user.user_type || "worker",
-        created_at: user.created_at || new Date().toISOString(),
+        user_type: user.user_type || userType || "worker",
     });
 
     const [filteredDistricts, setFilteredDistricts] = useState([]);
 
     useEffect(() => {
-        if (formData.regionId) {
+        if (userType === 'worker' && formData.regionId) {
             const filtered = districts.filter(d => d.region_id === Number(formData.regionId));
             setFilteredDistricts(filtered);
 
-            const cityExists = filtered.some(d => d.id === Number(formData.cityId));
-            if (!cityExists) {
-                setFormData(prev => ({ ...prev, cityId: "" }));
+            // Initialize selected districts if citiesId exists
+            if (user.citiesId && user.citiesId.length > 0) {
+                const initialDistricts = filtered.filter(d =>
+                    user.citiesId.includes(d.id)
+                );
+                setSelectedDistricts(initialDistricts);
             }
-        } else {
-            setFilteredDistricts([]);
-            setFormData(prev => ({ ...prev, cityId: "" }));
         }
-    }, [formData.regionId]);
+    }, [formData.regionId, userType]);
 
     const handleOpen = () => setOpen(!open);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-
         setFormData(prev => ({
             ...prev,
-            [name]: name === "regionId" || name === "cityId" ? Number(value) : value,
+            [name]: value,
         }));
     };
 
+    const handleDistrictSelect = (district) => {
+        if (userType === 'worker') {
+            const isSelected = selectedDistricts.some(d => d.id === district.id);
+            let updatedDistricts;
+
+            if (isSelected) {
+                updatedDistricts = selectedDistricts.filter(d => d.id !== district.id);
+            } else {
+                updatedDistricts = [...selectedDistricts, district];
+            }
+
+            setSelectedDistricts(updatedDistricts);
+            setFormData(prev => ({
+                ...prev,
+                citiesId: updatedDistricts.map(d => d.id),
+            }));
+        } else {
+            setFormData(prev => ({
+                ...prev,
+                cityId: district.id,
+            }));
+        }
+    };
 
     const handleSave = async () => {
         try {
-            await axios.put(`/user/update`, formData);
+            await axios.put(`/${userType}/update`, formData);
             Swal.fire({
                 title: "Muvaffaqiyatli!",
                 icon: "success",
@@ -115,57 +147,106 @@ export default function EditUser({ user, refresh }) {
                         onChange={handleChange}
                     />
 
-                    {/* Viloyat */}
-                    <div>
-                        <label className="text-sm font-medium text-gray-700 mb-1 block">
-                            Viloyat
-                        </label>
-                        <select
-                            name="regionId"
-                            value={formData.regionId}
-                            onChange={handleChange}
-                            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        >
-                            <option value="">-- Tanlang --</option>
-                            {regions.map((r) => (
-                                <option key={r.id} value={r.id}>
-                                    {r.name_uz}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
+                    {userType === 'customer' ? (
+                        <>
+                            <Input
+                                label="Viloyat va tuman manzili"
+                                name="regionAndCityAddress"
+                                value={formData.regionAndCityAddress}
+                                onChange={handleChange}
+                                className="col-span-2"
+                            />
+                            <Input
+                                label="Uy manzili"
+                                name="homeAddress"
+                                value={formData.homeAddress}
+                                onChange={handleChange}
+                                className="col-span-2"
+                            />
+                            <Textarea
+                                label="Manzil haqida izoh"
+                                name="addressComment"
+                                value={formData.addressComment}
+                                onChange={handleChange}
+                                className="col-span-2"
+                            />
+                        </>
+                    ) : (
+                        <>
+                            {/* Viloyat for worker */}
+                            <div className="col-span-2">
+                                <label className="text-sm font-medium text-gray-700 mb-1 block">
+                                    Viloyat
+                                </label>
+                                <select
+                                    name="regionId"
+                                    value={formData.regionId}
+                                    onChange={handleChange}
+                                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                >
+                                    <option value="">-- Tanlang --</option>
+                                    {regions.map((r) => (
+                                        <option key={r.id} value={r.id}>
+                                            {r.name_uz}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
 
-                    {/* Tuman */}
-                    <div>
-                        <label className="text-sm font-medium text-gray-700 mb-1 block">
-                            Shahar / Tuman
-                        </label>
-                        <select
-                            name="cityId"
-                            value={formData.cityId}
-                            onChange={handleChange}
-                            disabled={!formData.regionId}
-                            className={`w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none ${!formData.regionId
-                                ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                                : "focus:ring-2 focus:ring-blue-500"
-                                }`}
-                        >
-                            <option value="">-- Tanlang --</option>
-                            {filteredDistricts.map((d) => (
-                                <option key={d.id} value={d.id}>
-                                    {d.name_uz}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-
-                    <Textarea
-                        label="To‘liq manzil"
-                        name="fullAddress"
-                        value={formData.fullAddress}
-                        onChange={handleChange}
-                        className="col-span-1 md:col-span-2"
-                    />
+                            {/* Tumanlar for worker */}
+                            {formData.regionId && (
+                                <div className="col-span-2">
+                                    <label className="text-sm font-medium text-gray-700 mb-1 block">
+                                        Ish joylashgan shahar/tumanlar
+                                    </label>
+                                    <div className="border border-gray-300 rounded-md p-2 min-h-12">
+                                        {selectedDistricts.length > 0 ? (
+                                            <div className="flex flex-wrap gap-2">
+                                                {selectedDistricts.map(district => (
+                                                    <Chip
+                                                        key={district.id}
+                                                        value={district.name_uz}
+                                                        onClose={() => handleDistrictSelect(district)}
+                                                        className="bg-blue-500 text-white"
+                                                    />
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <p className="text-gray-400 text-sm">Tuman tanlanmagan</p>
+                                        )}
+                                    </div>
+                                    <div className="mt-2 grid grid-cols-2 md:grid-cols-3 gap-2">
+                                        {filteredDistricts.map(district => (
+                                            <Button
+                                                key={district.id}
+                                                size="sm"
+                                                variant={selectedDistricts.some(d => d.id === district.id) ? "filled" : "outlined"}
+                                                color="blue"
+                                                onClick={() => handleDistrictSelect(district)}
+                                                className="text-xs"
+                                            >
+                                                {district.name_uz}
+                                            </Button>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                            <Input
+                                label="Ishchilar soni"
+                                name="workerCount"
+                                type="number"
+                                value={formData.workerCount}
+                                onChange={handleChange}
+                            />
+                            <Input
+                                label="Balans"
+                                name="balance"
+                                type="number"
+                                value={formData.balance}
+                                onChange={handleChange}
+                            />
+                        </>
+                    )}
 
                     <Select
                         label="Til"
@@ -176,14 +257,6 @@ export default function EditUser({ user, refresh }) {
                         <Option value="ru">Russian</Option>
                     </Select>
 
-                    <Select
-                        label="Foydalanuvchi turi"
-                        value={formData.user_type}
-                        onChange={(val) => setFormData(prev => ({ ...prev, user_type: val }))}
-                    >
-                        <Option value="worker">Ishchi</Option>
-                        <Option value="customer">Mijoz</Option>
-                    </Select>
                 </DialogBody>
 
                 <DialogFooter>

@@ -10,7 +10,7 @@ import { useState } from "react";
 import Swal from "sweetalert2";
 
 
-export default function DeleteUser({ userId, refresh }) {
+export default function DeleteUser({ userId, refresh, userType }) {
     const [open, setOpen] = useState(false);
 
 
@@ -18,7 +18,7 @@ export default function DeleteUser({ userId, refresh }) {
 
     const handleConfirmDelete = async () => {
         try {
-            const response = await axios.delete(`/user/delete?id=${userId}`)
+            const response = await axios.delete(`/${userType}/delete?id=${userId}`)
             Swal.fire({
                 title: "Muvaffaqiyatli!",
                 icon: "success",
