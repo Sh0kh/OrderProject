@@ -19,6 +19,7 @@ import districts from "../../Dashboard/Data/districts.json";
 export default function EditUser({ user, refresh, userType }) {
     const [open, setOpen] = useState(false);
     const [selectedDistricts, setSelectedDistricts] = useState([]);
+    const [filteredDistricts, setFilteredDistricts] = useState([]);
 
     const [formData, setFormData] = useState({
         id: user.id,
@@ -33,14 +34,12 @@ export default function EditUser({ user, refresh, userType }) {
             regionId: user.regionId || "",
             citiesId: user.citiesId || [],
             workerCount: user.workerCount || 1,
-            services_category: user.services_category || "",
+            services_category: user.services_category || [],
             balance: user.balance || 0,
         } : {}),
         language: user.language || "uz",
         user_type: user.user_type || userType || "worker",
     });
-
-    const [filteredDistricts, setFilteredDistricts] = useState([]);
 
     useEffect(() => {
         if (userType === 'worker' && formData.regionId) {
@@ -83,17 +82,33 @@ export default function EditUser({ user, refresh, userType }) {
                 ...prev,
                 citiesId: updatedDistricts.map(d => d.id),
             }));
-        } else {
-            setFormData(prev => ({
-                ...prev,
-                cityId: district.id,
-            }));
         }
     };
 
     const handleSave = async () => {
         try {
-            await axios.put(`/${userType}/update`, formData);
+            let payload;
+
+            if (userType === 'worker') {
+                payload = {
+                    id: formData.id,
+                    fullName: formData.username,
+                    phoneNumber: formData.user_phone_number,
+                    regionId: Number(formData.regionId),
+                    citiesId: formData.citiesId,
+                    services_category: Array.isArray(formData.services_category)
+                        ? formData.services_category
+                        : [formData.services_category],
+                    balance: Number(formData.balance),
+                    workerCount: Number(formData.workerCount),
+                    language: formData.language,
+                    user_type: formData.user_type
+                };
+            } else {
+                payload = formData;
+            }
+
+            await axios.put(`/${userType}/update`, payload);
             Swal.fire({
                 title: "Muvaffaqiyatli!",
                 icon: "success",
@@ -245,6 +260,22 @@ export default function EditUser({ user, refresh, userType }) {
                                 value={formData.balance}
                                 onChange={handleChange}
                             />
+                            <div className="col-span-2">
+                                <label className="text-sm font-medium text-gray-700 mb-1 block">
+                                    Xizmat turlari
+                                </label>
+                                <Input
+                                    name="services_category"
+                                    value={Array.isArray(formData.services_category)
+                                        ? formData.services_category.join(', ')
+                                        : formData.services_category}
+                                    onChange={(e) => setFormData(prev => ({
+                                        ...prev,
+                                        services_category: e.target.value.split(',').map(item => item.trim())
+                                    }))}
+                                    placeholder="Xizmat turlarini vergul bilan ajrating"
+                                />
+                            </div>
                         </>
                     )}
 

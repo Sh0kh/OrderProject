@@ -1,4 +1,4 @@
 import axios from 'axios'
-axios.defaults.baseURL = 'https://a7e18a7e548b.ngrok-free.app'
+axios.defaults.baseURL = 'https://d7e91a171851.ngrok-free.app'
 
 export default axios
