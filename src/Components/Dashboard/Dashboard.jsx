@@ -18,6 +18,7 @@ export default function OrderList() {
   const [size, setSize] = useState(10);
   const [isActive, setIsActive] = useState(false);
   const [isClosed, setIsClosed] = useState(false);
+  const [showProgressOrders, setShowProgressOrders] = useState(false);
 
   const [totalPages, setTotalPages] = useState(1);
   const [isLast, setIsLast] = useState(false);
@@ -50,6 +51,32 @@ export default function OrderList() {
       setTotalPages(response.data.totalPages || 1);
       setIsLast(response.data.last);
       setIsFirst(response.data.first);
+      setShowProgressOrders(false);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getProgressOrders = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(`/order/api/getProgressOrders`, {
+        headers: {
+          "ngrok-skip-browser-warning": "true",
+        },
+        params: {
+          page,
+          size,
+        },
+      });
+
+      setData(response.data.content || []);
+      setTotalPages(response.data.totalPages || 1);
+      setIsLast(response.data.last);
+      setIsFirst(response.data.first);
+      setShowProgressOrders(true);
     } catch (error) {
       console.log(error);
     } finally {
@@ -58,8 +85,12 @@ export default function OrderList() {
   };
 
   useEffect(() => {
-    getAllOrders();
-  }, [page, size, isActive, isClosed]);
+    if (showProgressOrders) {
+      getProgressOrders();
+    } else {
+      getAllOrders();
+    }
+  }, [page, size, isActive, isClosed, showProgressOrders]);
 
   if (loading) {
     return (
@@ -77,8 +108,24 @@ export default function OrderList() {
   return (
     <div className="min-h-screen mt-[80px] p-4">
       <h1 className="text-2xl font-bold text-center mb-6 text-gray-800">
-        Buyurtmalar Ro‘yxati
+        Buyurtmalar Ro'yxati
       </h1>
+
+      {/* Progress Orders Button */}
+      <div className="flex justify-center mb-6">
+        <Button
+          onClick={getProgressOrders}
+          className={`mr-4 ${showProgressOrders ? 'bg-blue-600' : 'bg-gray-600'}`}
+        >
+          Jarayondagi buyurtmalar
+        </Button>
+        <Button
+          onClick={getAllOrders}
+          className={`${!showProgressOrders ? 'bg-blue-600' : 'bg-gray-600'}`}
+        >
+          Barcha buyurtmalar
+        </Button>
+      </div>
 
       {/* Filters */}
       <Card className="mb-6 py-[20px] px-[20px] shadow-md border">
@@ -88,6 +135,7 @@ export default function OrderList() {
               label="Faol holati"
               value={String(isActive)}
               onChange={(val) => setIsActive(val === "true")}
+              disabled={showProgressOrders}
             >
               <Option value="true">Faol</Option>
               <Option value="false">Nofaol</Option>
@@ -98,6 +146,7 @@ export default function OrderList() {
               label="Yopilgan"
               value={String(isClosed)}
               onChange={(val) => setIsClosed(val === "true")}
+              disabled={showProgressOrders}
             >
               <Option value="true">Yopilgan</Option>
               <Option value="false">Ochiq</Option>
@@ -142,7 +191,7 @@ export default function OrderList() {
 
                   <Typography className="text-gray-700">
                     <span className="font-medium">Izoh:</span>{" "}
-                    {order.orderComment || "Yo‘q"}
+                    {order.orderComment || "Yo'q"}
                   </Typography>
 
                   <Typography className="text-gray-700">
