@@ -1,30 +1,15 @@
-import { Outlet, useNavigate } from "react-router-dom";
-import Sidebar from "../Components/Dashboard/components/Sidebar/Sidebar";
-import AdminHeader from "../Components/Dashboard/components/Header/AdminHeader";
-import { useEffect, useState } from "react";
+import { Outlet } from "react-router-dom";
+import Sidebar from "../AdminComponents/Sidebar/Sidebar";
+import AdminHeader from "../AdminComponents/Header/AdminHeader";
 
 
 
 export default function AdminLayout() {
-
-    const [active, setActive] = useState(false)
-    const isAuthenticated = localStorage.getItem('isAuthenticated');
-    const navigate = useNavigate()
-
-    useEffect(() => {
-        if (isAuthenticated !== 'true') {
-            navigate('/login');
-            localStorage.clear()
-        } else {
-            console.log("Error")
-        }
-    }, [isAuthenticated])
-
     return (
-        <div className="flex w-[100%] overflow-hidden  bg-[#FAFAFA] relative">
-            <Sidebar active={active} onclose={() => setActive(false)} />
-            <div className="mt-[10px] w-full min-h-screen">
-                <AdminHeader active={() => setActive(!active)} />
+        <div className="flex w-[100%] overflow-hidden pr-[20px]">
+            <Sidebar/>
+            <div className="ml-[320px] mt-[10px] w-full">
+                <AdminHeader/>
                 <Outlet />
             </div>
         </div>
